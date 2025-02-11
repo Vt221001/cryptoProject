@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crypto Live Data</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <h1>Crypto Live Market</h1>
+
+    <button onclick="downloadExcel()">📥 Download Excel</button>
+    <button onclick="downloadPDF()">📥 Download PDF</button>
+
+    <table id="cryptoTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Symbol</th>
+          <th>Price ($)</th>
+          <th>Market Cap</th>
+          <th>Volume</th>
+          <th>Change (24h)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script>
+      async function fetchData() {
+        try {
+          const response = await fetch("/api/crypto-data");
+          const data = await response.json();
+
+          console.log("📌 API Response:", data); // ✅ Debugging in Browser Console
+
+          if (!Array.isArray(data)) {
+            console.error("❌ API returned an error:", data);
+            return;
+          }
+
+          const tableBody = document.querySelector("#cryptoTable tbody");
+          tableBody.innerHTML = "";
+
+          data.forEach((coin) => {
+            console.log("📌 Coin Data:", coin); // ✅ Check individual data objects
+
+            const row = `<tr>
+                        <td>${coin.name || "N/A"}</td>  
+                        <td>${coin.symbol.toUpperCase() || "N/A"}</td>  
+                        <td>$${
+                          coin.current_price
+                            ? coin.current_price.toFixed(2)
+                            : "N/A"
+                        }</td>  
+                        <td>$${
+                          coin.market_cap
+                            ? coin.market_cap.toLocaleString()
+                            : "N/A"
+                        }</td>  
+                        <td>${
+                          coin.total_volume
+                            ? coin.total_volume.toLocaleString()
+                            : "N/A"
+                        }</td>  
+                        <td>${
+                          coin.price_change_percentage_24h !== null
+                            ? coin.price_change_percentage_24h.toFixed(2) + "%"
+                            : "N/A"
+                        }</td>  
+                    </tr>`;
+            tableBody.innerHTML += row;
+          });
+        } catch (error) {
+          console.error("❌ Error fetching data:", error);
+        }
+      }
+
+      function downloadExcel() {
+        window.location.href = "/download/excel"; // ✅ Corrected Flask route
+      }
+
+      function downloadPDF() {
+        window.location.href = "/download/pdf"; // ✅ Corrected Flask route
+      }
+
+      fetchData();
+    </script>
+  </body>
+</html>
